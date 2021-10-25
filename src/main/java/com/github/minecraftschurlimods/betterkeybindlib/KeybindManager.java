@@ -9,6 +9,10 @@ import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fmlclient.registry.ClientRegistry;
 import org.intellij.lang.annotations.MagicConstant;
 import org.lwjgl.glfw.GLFW;
 
@@ -29,6 +33,7 @@ public final class KeybindManager {
         this.modid = modid;
         MinecraftForge.EVENT_BUS.addListener(this::onKeyboardInput);
         MinecraftForge.EVENT_BUS.addListener(this::onMouseInput);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(EventPriority.LOWEST, this::init);
     }
 
     public KeybindBuilder keybind(String name, @MagicConstant(valuesFromClass = InputConstants.class) int keyCode) {
@@ -72,6 +77,10 @@ public final class KeybindManager {
         if (builder.callback != null) {
             this.callbacks.putIfAbsent(mapping, builder.callback);
         }
+    }
+
+    private void init(FMLClientSetupEvent event) {
+        mappings.values().forEach(ClientRegistry::registerKeyBinding);
     }
 
     public class KeybindBuilder {
