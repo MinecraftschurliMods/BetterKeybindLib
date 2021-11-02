@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,16 +29,15 @@ public record CompoundKeyConflictContext(List<IKeyConflictContext> contexts) imp
         return this.equals(other) || contexts.stream().anyMatch(context -> context.conflicts(other));
     }
 
+    @NotNull
     @Override
     public Map<String, Function<Callback.Context,?>> context() {
         Map<String, Function<Callback.Context,?>> map = new HashMap<>();
-        for (IKeyConflictContext conflictContext : this.contexts()) {
-            if (conflictContext instanceof KeyConflictContext kcc) {
-                if (kcc == KeyConflictContext.GUI) {
-                    map.put("screen", (ctx) -> Minecraft.getInstance().screen);
-                }
-            } else if (conflictContext instanceof IContextProvider cp) {
-                map.putAll(cp.context());
+        for (IKeyConflictContext context : this.contexts()) {
+            if (context == KeyConflictContext.GUI) {
+                map.put("screen", (ctx) -> Minecraft.getInstance().screen);
+            } else if (context instanceof IContextProvider contextProvider) {
+                map.putAll(contextProvider.context());
             }
         }
         return map;

@@ -1,16 +1,14 @@
 package com.github.minecraftschurlimods.betterkeybindlib;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fmlclient.registry.ClientRegistry;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
@@ -25,6 +23,7 @@ public final class KeybindManager {
     private static final Map<String, KeybindManager> MANAGER = new HashMap<>();
     private final Map<ResourceLocation, IKeybind> keybindings = new HashMap<>();
     private final String modid;
+    private boolean busRegistered;
 
     public static KeybindManager get(String modid) {
         return MANAGER.computeIfAbsent(modid, KeybindManager::new);
@@ -32,11 +31,17 @@ public final class KeybindManager {
 
     private KeybindManager(String modid) {
         this.modid = modid;
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(EventPriority.LOWEST, this::init);
+    }
+
+    public synchronized KeybindManager register(IEventBus bus) {
+        if (this.busRegistered) return this;
+        this.busRegistered = true;
+        bus.addListener(EventPriority.LOWEST, this::init);
+        return this;
     }
 
     @SubscribeEvent
-    private static void onKeyboardInput(InputEvent.KeyInputEvent event) {
+    static void onKeyboardInput(InputEvent.KeyInputEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
@@ -46,7 +51,7 @@ public final class KeybindManager {
     }
 
     @SubscribeEvent
-    private static void onMouseInput(InputEvent.MouseInputEvent event) {
+    static void onMouseInput(InputEvent.MouseInputEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 

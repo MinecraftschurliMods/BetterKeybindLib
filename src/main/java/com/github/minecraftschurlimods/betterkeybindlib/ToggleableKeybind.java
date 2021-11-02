@@ -10,6 +10,9 @@ import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class ToggleableKeybind extends AbstractKeybind {
     private boolean state = false;
 
@@ -45,17 +48,7 @@ public class ToggleableKeybind extends AbstractKeybind {
 
     @Override
     protected Callback.Context makeContext() {
-        Callback.Context ctx = super.makeContext();
-        return new Callback.Context() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public <T> T get(String name) {
-                if ("state".equals(name)) {
-                    return (T) Boolean.valueOf(ToggleableKeybind.this.isActive());
-                }
-                return ctx.get(name);
-            }
-        };
+        return new ContextWrapperWithState(super.makeContext(), ToggleableKeybind.this.isActive());
     }
 
     public static class Builder extends AbstractBuilder<ToggleableKeybind.Builder, ToggleableKeybind> {
@@ -81,6 +74,24 @@ public class ToggleableKeybind extends AbstractKeybind {
                                          this.keyCode,
                                          this.category,
                                          this.callback);
+        }
+    }
+
+    private record ContextWrapperWithState(Callback.Context ctx, boolean state) implements Callback.Context {
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> T get(String name) {
+            if ("state".equals(name)) {
+                return (T) Boolean.valueOf(state());
+            }
+            return ctx().get(name);
+        }
+
+        @Override
+        public boolean provides(String... names) {
+            List<String> list = Arrays.asList(names);
+            list.remove("state");
+            return ctx().provides(list.toArray(String[]::new));
         }
     }
 }

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
+import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -52,13 +54,7 @@ public abstract class AbstractKeybind implements IKeybind {
         } else if (conflictContext instanceof IContextProvider cp) {
             map.putAll(cp.context());
         }
-        return new Callback.Context() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public <T> T get(String name) {
-                return (T) map.get(name).apply(this);
-            }
-        };
+        return new MapContext(map);
     }
 
     public static abstract class AbstractBuilder<T extends AbstractBuilder<T,B>, B extends AbstractKeybind> {
@@ -130,6 +126,25 @@ public abstract class AbstractKeybind implements IKeybind {
         @Contract("-> this")
         private T self() {
             return (T) this;
+        }
+    }
+
+    protected record MapContext(Map<String, Function<Callback.Context, ?>> map) implements Callback.Context {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> T get(String name) {
+            return (T) map().get(name).apply(this);
+        }
+
+        @Override
+        public boolean provides(String... names) {
+            return Arrays.stream(names).allMatch(map()::containsKey);
+        }
+
+        @Override
+        public Map<String, Function<Callback.Context, ?>> map() {
+            return Collections.unmodifiableMap(map);
         }
     }
 }

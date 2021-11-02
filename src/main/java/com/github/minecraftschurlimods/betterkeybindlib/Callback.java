@@ -6,5 +6,6 @@ public interface Callback {
 
     interface Context {
         <T> T get(String name);
+        boolean provides(String... names);
     }
 }
