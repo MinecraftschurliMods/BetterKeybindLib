@@ -134,7 +134,7 @@ public abstract class AbstractKeybind implements IKeybind {
         @SuppressWarnings("unchecked")
         @Override
         public <T> T get(String name) {
-            return (T) map().get(name).apply(this);
+            return (T) map().getOrDefault(name, ctx -> null).apply(this);
         }
 
         @Override

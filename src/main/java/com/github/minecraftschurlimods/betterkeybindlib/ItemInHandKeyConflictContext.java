@@ -1,8 +1,7 @@
 package com.github.minecraftschurlimods.betterkeybindlib;
 
-import com.mojang.datafixers.util.Either;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -16,35 +15,40 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.Predicate;
 
-/**
- *
- */
 public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
-    private static final Map<Either<Item, Tag<Item>>, ItemInHandKeyConflictContext> CONTEXTS = new HashMap<>();
+    private static final Map<Predicate<ItemStack>, ItemInHandKeyConflictContext> CONTEXTS = new HashMap<>();
 
-    private final @NotNull  Either<Item, Tag<Item>> item;
-    private final @Nullable InteractionHand         hand;
+    private final @NotNull  Predicate<ItemStack> item;
+    private final @Nullable InteractionHand      hand;
 
-    protected ItemInHandKeyConflictContext(Either<Item, Tag<Item>> item, @Nullable InteractionHand hand) {
+    protected ItemInHandKeyConflictContext(Predicate<ItemStack> item, @Nullable InteractionHand hand) {
         this.item = item;
         this.hand = hand;
     }
 
-    public static IKeyConflictContext from(Item item, @Nullable InteractionHand hand) {
-        return CONTEXTS.computeIfAbsent(Either.left(item), item1 -> new ItemInHandKeyConflictContext(item1, null));
+    public static IKeyConflictContext from(ResourceLocation item, @Nullable InteractionHand hand) {
+        return CONTEXTS.computeIfAbsent(new ItemWrapper(item), item1 -> new ItemInHandKeyConflictContext(item1, null));
     }
 
-    public static IKeyConflictContext from(Tag<Item> item, @Nullable InteractionHand hand) {
-        return CONTEXTS.computeIfAbsent(Either.right(item), item1 -> new ItemInHandKeyConflictContext(item1, null));
+    public static IKeyConflictContext from(Item item, @Nullable InteractionHand hand) {
+        return from(item.getRegistryName(), hand);
+    }
+
+    public static IKeyConflictContext from(Tag.Named<Item> item, @Nullable InteractionHand hand) {
+        return CONTEXTS.computeIfAbsent(new TagWrapper(item.getName()), item1 -> new ItemInHandKeyConflictContext(item1, null));
     }
 
     public static IKeyConflictContext from(Item item) {
         return from(item, null);
     }
 
-    public static IKeyConflictContext from(Tag<Item> item) {
+    public static IKeyConflictContext from(Tag.Named<Item> item) {
+        return from(item, null);
+    }
+
+    public static IKeyConflictContext from(ResourceLocation item) {
         return from(item, null);
     }
 
@@ -55,7 +59,7 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
             return false;
         }
         ItemStack item = getMatchingStack(player);
-        return this.item.map(item::is, item::is);
+        return this.item.test(item);
     }
 
     @Override
@@ -65,7 +69,9 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
 
     @Override
     public Map<String, Function<Callback.Context,?>> context() {
-        return Map.of("stack", (ctx) -> getMatchingStack(ctx.get("player")));
+        var map = new HashMap<>(super.context());
+        map.put("stack", (ctx) -> getMatchingStack(ctx.get("player")));
+        return map;
     }
 
     private ItemStack getMatchingStack(Player player) {
@@ -74,7 +80,7 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
             item = player.getItemInHand(this.hand);
         } else {
             item = player.getMainHandItem();
-            if (item.isEmpty() || !this.item.map(item::is, item::is)) {
+            if (item.isEmpty() || !this.item.test(item)) {
                 item = player.getOffhandItem();
             }
         }
@@ -99,4 +105,17 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
         return "ItemInHandKeyConflictContext[" + "item=" + item + ", " + "hand=" + hand + ']';
     }
 
+    private record TagWrapper(ResourceLocation tag) implements Predicate<ItemStack> {
+        @Override
+        public boolean test(ItemStack stack) {
+            return stack.getItem().getTags().contains(tag);
+        }
+    }
+
+    private record ItemWrapper(ResourceLocation item) implements Predicate<ItemStack> {
+        @Override
+        public boolean test(ItemStack stack) {
+            return item.equals(stack.getItem().getRegistryName());
+        }
+    }
 }

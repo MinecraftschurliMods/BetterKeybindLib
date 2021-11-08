@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -18,7 +19,6 @@ import org.lwjgl.glfw.GLFW;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mod.EventBusSubscriber
 public final class KeybindManager {
     private static final Map<String, KeybindManager> MANAGER = new HashMap<>();
     private final Map<ResourceLocation, IKeybind> keybindings = new HashMap<>();
@@ -37,11 +37,12 @@ public final class KeybindManager {
         if (this.busRegistered) return this;
         this.busRegistered = true;
         bus.addListener(EventPriority.LOWEST, this::init);
+        MinecraftForge.EVENT_BUS.addListener(this::onKeyboardInput);
+        MinecraftForge.EVENT_BUS.addListener(this::onMouseInput);
         return this;
     }
 
-    @SubscribeEvent
-    static void onKeyboardInput(InputEvent.KeyInputEvent event) {
+    private void onKeyboardInput(InputEvent.KeyInputEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
@@ -50,8 +51,7 @@ public final class KeybindManager {
         }
     }
 
-    @SubscribeEvent
-    static void onMouseInput(InputEvent.MouseInputEvent event) {
+    private void onMouseInput(InputEvent.MouseInputEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
@@ -60,13 +60,11 @@ public final class KeybindManager {
         }
     }
 
-    private static void onInput(InputConstants.Key key) {
-        for (KeybindManager manager : MANAGER.values()) {
-            for (IKeybind entry : manager.keybindings.values()) {
-                if (entry.getMapping().isActiveAndMatches(key)) {
-                    if (entry.click()) {
-                        break;
-                    }
+    private void onInput(InputConstants.Key key) {
+        for (IKeybind entry : this.keybindings.values()) {
+            if (entry.getMapping().isActiveAndMatches(key)) {
+                if (entry.click()) {
+                    break;
                 }
             }
         }
