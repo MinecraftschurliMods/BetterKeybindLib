@@ -71,6 +71,14 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
     public Map<String, Function<Callback.Context,?>> context() {
         var map = new HashMap<>(super.context());
         map.put("stack", (ctx) -> getMatchingStack(ctx.get("player")));
+        map.put("hand", (ctx) -> {
+            Player player = ctx.get("player");
+            return this.hand != null
+                    ? this.hand
+                    : getMatchingStack(player) == player.getMainHandItem()
+                            ? InteractionHand.MAIN_HAND
+                            : InteractionHand.OFF_HAND;
+        });
         return map;
     }
 
