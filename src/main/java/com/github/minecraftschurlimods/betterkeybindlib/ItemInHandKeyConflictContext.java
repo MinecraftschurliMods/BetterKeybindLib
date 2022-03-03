@@ -3,6 +3,7 @@ package com.github.minecraftschurlimods.betterkeybindlib;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -36,15 +37,15 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
         return from(item.getRegistryName(), hand);
     }
 
-    public static IKeyConflictContext from(Tag.Named<Item> item, @Nullable InteractionHand hand) {
-        return CONTEXTS.computeIfAbsent(new TagWrapper(item.getName()), item1 -> new ItemInHandKeyConflictContext(item1, null));
+    public static IKeyConflictContext from(TagKey<Item> item, @Nullable InteractionHand hand) {
+        return CONTEXTS.computeIfAbsent(new TagWrapper(item), item1 -> new ItemInHandKeyConflictContext(item1, null));
     }
 
     public static IKeyConflictContext from(Item item) {
         return from(item, null);
     }
 
-    public static IKeyConflictContext from(Tag.Named<Item> item) {
+    public static IKeyConflictContext from(TagKey<Item> item) {
         return from(item, null);
     }
 
@@ -113,10 +114,10 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
         return "ItemInHandKeyConflictContext[" + "item=" + item + ", " + "hand=" + hand + ']';
     }
 
-    private record TagWrapper(ResourceLocation tag) implements Predicate<ItemStack> {
+    private record TagWrapper(TagKey<Item> tag) implements Predicate<ItemStack> {
         @Override
         public boolean test(ItemStack stack) {
-            return stack.getItem().getTags().contains(tag);
+            return stack.m_204117_(tag);
         }
     }
 
