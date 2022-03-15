@@ -117,7 +117,7 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
     private record TagWrapper(TagKey<Item> tag) implements Predicate<ItemStack> {
         @Override
         public boolean test(ItemStack stack) {
-            return stack.m_204117_(tag);
+            return stack.is(tag);
         }
     }
 
