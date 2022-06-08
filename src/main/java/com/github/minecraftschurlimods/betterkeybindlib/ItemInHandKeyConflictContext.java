@@ -2,13 +2,13 @@ package com.github.minecraftschurlimods.betterkeybindlib;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.Tag;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.settings.IKeyConflictContext;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,15 +30,15 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
     }
 
     public static IKeyConflictContext from(ResourceLocation item, @Nullable InteractionHand hand) {
-        return CONTEXTS.computeIfAbsent(new ItemWrapper(item), item1 -> new ItemInHandKeyConflictContext(item1, null));
+        return CONTEXTS.computeIfAbsent(new ItemWrapper(item), item1 -> new ItemInHandKeyConflictContext(item1, hand));
     }
 
     public static IKeyConflictContext from(Item item, @Nullable InteractionHand hand) {
-        return from(item.getRegistryName(), hand);
+        return from(Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item)), hand);
     }
 
     public static IKeyConflictContext from(TagKey<Item> item, @Nullable InteractionHand hand) {
-        return CONTEXTS.computeIfAbsent(new TagWrapper(item), item1 -> new ItemInHandKeyConflictContext(item1, null));
+        return CONTEXTS.computeIfAbsent(new TagWrapper(item), item1 -> new ItemInHandKeyConflictContext(item1, hand));
     }
 
     public static IKeyConflictContext from(Item item) {
@@ -124,7 +124,7 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
     private record ItemWrapper(ResourceLocation item) implements Predicate<ItemStack> {
         @Override
         public boolean test(ItemStack stack) {
-            return item.equals(stack.getItem().getRegistryName());
+            return item.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()));
         }
     }
 }
