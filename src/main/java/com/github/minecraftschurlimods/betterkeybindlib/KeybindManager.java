@@ -4,11 +4,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.client.ClientRegistry;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +39,7 @@ public final class KeybindManager {
         return this;
     }
 
-    private void onKeyboardInput(InputEvent.KeyInputEvent event) {
+    private void onKeyboardInput(InputEvent.Key event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
@@ -49,7 +48,7 @@ public final class KeybindManager {
         }
     }
 
-    private void onMouseInput(InputEvent.MouseInputEvent event) {
+    private void onMouseInput(InputEvent.MouseButton.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
@@ -106,7 +105,7 @@ public final class KeybindManager {
         return ToggleableKeybind.builder(new ResourceLocation(modid, name), inputType, keyCode, category).setRegistrator(this::register);
     }
 
-    private void init(FMLClientSetupEvent event) {
-        keybindings.values().stream().map(IKeybind::getMapping).forEach(ClientRegistry::registerKeyBinding);
+    private void init(RegisterKeyMappingsEvent event) {
+        keybindings.values().stream().map(IKeybind::getMapping).forEach(event::register);
     }
 }
