@@ -3,11 +3,11 @@ package com.github.minecraftschurlimods.betterkeybindlib;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -34,8 +34,8 @@ public final class KeybindManager {
         if (this.busRegistered) return this;
         this.busRegistered = true;
         bus.addListener(EventPriority.LOWEST, this::init);
-        MinecraftForge.EVENT_BUS.addListener(this::onKeyboardInput);
-        MinecraftForge.EVENT_BUS.addListener(this::onMouseInput);
+        NeoForge.EVENT_BUS.addListener(this::onKeyboardInput);
+        NeoForge.EVENT_BUS.addListener(this::onMouseInput);
         return this;
     }
 

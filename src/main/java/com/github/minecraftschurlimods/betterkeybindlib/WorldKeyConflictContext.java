@@ -1,7 +1,7 @@
 package com.github.minecraftschurlimods.betterkeybindlib;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.settings.IKeyConflictContext;
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 
 import java.util.Map;
 import java.util.function.Function;

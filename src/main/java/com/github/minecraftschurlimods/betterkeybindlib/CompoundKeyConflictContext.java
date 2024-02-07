@@ -2,8 +2,8 @@ package com.github.minecraftschurlimods.betterkeybindlib;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.settings.IKeyConflictContext;
-import net.minecraftforge.client.settings.KeyConflictContext;
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

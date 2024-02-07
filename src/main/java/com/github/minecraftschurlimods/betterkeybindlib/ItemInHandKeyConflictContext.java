@@ -1,14 +1,14 @@
 package com.github.minecraftschurlimods.betterkeybindlib;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.settings.IKeyConflictContext;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +34,7 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
     }
 
     public static IKeyConflictContext from(Item item, @Nullable InteractionHand hand) {
-        return from(Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item)), hand);
+        return from(Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(item)), hand);
     }
 
     public static IKeyConflictContext from(TagKey<Item> item, @Nullable InteractionHand hand) {
@@ -124,7 +124,7 @@ public class ItemInHandKeyConflictContext extends WorldKeyConflictContext {
     private record ItemWrapper(ResourceLocation item) implements Predicate<ItemStack> {
         @Override
         public boolean test(ItemStack stack) {
-            return item.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()));
+            return item.equals(BuiltInRegistries.ITEM.getKey(stack.getItem()));
         }
     }
 }
